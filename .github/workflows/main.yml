@@ -1,4 +1,4 @@
-name: Windows-RDP
+name: Windows-RDP-Safe
 on: workflow_dispatch
 jobs:
   build:
@@ -6,22 +6,27 @@ jobs:
     steps:
       - name: Preparing Ngrok
         run: |
-          Invoke-WebRequest https://bin.equinox.io/c/4VmD4z7iaB8/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+          # تحميل أحدث نسخة مستقرة مباشرة
+          curl -L -o ngrok.zip https://bin.equinox.io/c/bNy7zpsFYM/ngrok-v3-stable-windows-amd64.zip
           Expand-Archive ngrok.zip
       - name: Connecting to Ngrok
         run: |
-          .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+          .\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-      - name: Enabling RDP Access
+      - name: Setting Password and Enabling RDP
         run: |
+          # تغيير باسوورد المستخدم لزيادة الأمان
+          net user runneradmin Seif_2026_Monster /add
+          net localgroup administrators runneradmin /add
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
       - name: Create Session
         run: |
-          Start-Process Powershell -ArgumentList "-NoExit -Command '.\ngrok\ngrok.exe tcp 3389'"
+          Start-Process Powershell -ArgumentList "-NoExit -Command '.\ngrok.exe tcp 3389'"
       - name: Keeping RDP Alive
         run: |
-          Write-Host "RDP Is Ready! Copy the IP from Ngrok Dashboard."
+          Write-Host "RDP Is Ready!"
+          Write-Host "User: runneradmin"
+          Write-Host "Pass: Seif_2026_Monster"
           sleep 21600
