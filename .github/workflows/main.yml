@@ -1,32 +1,20 @@
-name: Windows-RDP-Safe
+name: Seif-Monster-RDP
 on: workflow_dispatch
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Preparing Ngrok
+      - name: Preparing Environment
         run: |
-          # تحميل أحدث نسخة مستقرة مباشرة
-          curl -L -o ngrok.zip https://bin.equinox.io/c/bNy7zpsFYM/ngrok-v3-stable-windows-amd64.zip
-          Expand-Archive ngrok.zip
+          # سكريبت ذكي بيحمل الأدوات المطلوبة أوتوماتيك بأمان
+          Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
       - name: Connecting to Ngrok
         run: |
-          .\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+          # استخدام أداة الشل لتحميل وتشغيل Ngrok بضغطة واحدة
+          curl -s https://raw.githubusercontent.com/rokibhasansagar/github-actions-rdp/main/scripts/rdp_ngrok.sh | bash
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-      - name: Setting Password and Enabling RDP
-        run: |
-          # تغيير باسوورد المستخدم لزيادة الأمان
-          net user runneradmin Seif_2026_Monster /add
-          net localgroup administrators runneradmin /add
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
-          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-      - name: Create Session
-        run: |
-          Start-Process Powershell -ArgumentList "-NoExit -Command '.\ngrok.exe tcp 3389'"
       - name: Keeping RDP Alive
         run: |
-          Write-Host "RDP Is Ready!"
-          Write-Host "User: runneradmin"
-          Write-Host "Pass: Seif_2026_Monster"
+          Write-Host "الوحش جاهز للعمل!"
           sleep 21600
